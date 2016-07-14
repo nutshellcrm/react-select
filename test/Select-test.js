@@ -3271,6 +3271,17 @@ describe('Select', () => {
 		});
 	});
 
+	describe('custom menuWrapperComponent option', () => {
+		it('should render the menu inside of a custom wrapper component', () => {
+			const instance = createControl({
+				options: defaultOptions,
+				menuWrapperComponent: (props) => <div className="customMenuWrapper">{props.children}</div> // eslint-disable-line react/prop-types
+			});
+			clickArrowToOpen();
+			expect(ReactDOM.findDOMNode(instance), 'to contain elements matching', '.customMenuWrapper .Select-menu-outer');
+		});
+	});
+
 	describe('accessibility', () => {
 
 		describe('with basic searchable control', () => {
