@@ -76,6 +76,7 @@ const Select = React.createClass({
 		menuContainerStyle: React.PropTypes.object, // optional style to apply to the menu container
 		menuRenderer: React.PropTypes.func,         // renders a custom menu with options
 		menuStyle: React.PropTypes.object,          // optional style to apply to the menu
+		menuWrapperComponent: React.PropTypes.func, // optional wrapper component that will render the menu as a child
 		multi: React.PropTypes.bool,                // multi-value input
 		name: React.PropTypes.string,               // generates a hidden <input /> tag with this field name for html forms
 		noResultsText: stringOrNode,                // placeholder displayed when there are no matching search results
@@ -1007,7 +1008,9 @@ const Select = React.createClass({
 			return null;
 		}
 
-		return (
+		const MenuWrapperComponent = this.props.menuWrapperComponent;
+
+		const menuContainer = (
 			<div ref={ref => this.menuContainer = ref} className="Select-menu-outer" style={this.props.menuContainerStyle}>
 				<div ref={ref => this.menu = ref} role="listbox" className="Select-menu" id={this._instancePrefix + '-list'}
 						 style={this.props.menuStyle}
@@ -1017,6 +1020,10 @@ const Select = React.createClass({
 				</div>
 			</div>
 		);
+
+		return MenuWrapperComponent
+			? <MenuWrapperComponent>{menuContainer}</MenuWrapperComponent>
+			: menuContainer;
 	},
 
 	render () {
