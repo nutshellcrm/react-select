@@ -866,7 +866,7 @@ const Select = React.createClass({
 	},
 
 	renderMenu (options, valueArray, focusedOption) {
-		if (options && options.length) {
+		if ((options && options.length) || this.props.allowCreate) {
 			if (this.props.menuRenderer) {
 				return this.props.menuRenderer({
 					focusedOption,
@@ -879,6 +879,22 @@ const Select = React.createClass({
 			} else {
 				let Option = this.props.optionComponent;
 				let renderLabel = this.props.optionRenderer || this.getOptionLabel;
+
+				if (this.props.allowCreate && this.state.inputValue.trim()) {
+					let { inputValue } = this.state;
+
+					options = options.slice();
+
+					let newOption = this.props.newOptionCreator
+						? this.props.newOptionCreator(inputValue)
+						: {
+							value: inputValue,
+							label: inputValue,
+							create: true
+						};
+
+					options.unshift(newOption);
+				}
 
 				return options.map((option, i) => {
 					let isSelected = valueArray && valueArray.indexOf(option) > -1;

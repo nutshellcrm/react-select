@@ -419,6 +419,7 @@ var Select = _react2['default'].createClass({
 		menuContainerStyle: _react2['default'].PropTypes.object, // optional style to apply to the menu container
 		menuRenderer: _react2['default'].PropTypes.func, // renders a custom menu with options
 		menuStyle: _react2['default'].PropTypes.object, // optional style to apply to the menu
+		menuWrapperComponent: _react2['default'].PropTypes.func, // optional wrapper component that will render the menu as a child
 		multi: _react2['default'].PropTypes.bool, // multi-value input
 		name: _react2['default'].PropTypes.string, // generates a hidden <input /> tag with this field name for html forms
 		newOptionCreator: _react2['default'].PropTypes.func, // factory to create new options when allowCreate set
@@ -1253,7 +1254,7 @@ var Select = _react2['default'].createClass({
 	renderMenu: function renderMenu(options, valueArray, focusedOption) {
 		var _this6 = this;
 
-		if (options && options.length) {
+		if (options && options.length || this.props.allowCreate) {
 			if (this.props.menuRenderer) {
 				return this.props.menuRenderer({
 					focusedOption: focusedOption,
@@ -1267,6 +1268,20 @@ var Select = _react2['default'].createClass({
 				var _ret = (function () {
 					var Option = _this6.props.optionComponent;
 					var renderLabel = _this6.props.optionRenderer || _this6.getOptionLabel;
+
+					if (_this6.props.allowCreate && _this6.state.inputValue.trim()) {
+						var inputValue = _this6.state.inputValue;
+
+						options = options.slice();
+
+						var newOption = _this6.props.newOptionCreator ? _this6.props.newOptionCreator(inputValue) : {
+							value: inputValue,
+							label: inputValue,
+							create: true
+						};
+
+						options.unshift(newOption);
+					}
 
 					return {
 						v: options.map(function (option, i) {
@@ -1363,7 +1378,9 @@ var Select = _react2['default'].createClass({
 			return null;
 		}
 
-		return _react2['default'].createElement(
+		var MenuWrapperComponent = this.props.menuWrapperComponent;
+
+		var menuContainer = _react2['default'].createElement(
 			'div',
 			{ ref: 'menuContainer', className: 'Select-menu-outer', style: this.props.menuContainerStyle },
 			_react2['default'].createElement(
@@ -1375,6 +1392,12 @@ var Select = _react2['default'].createClass({
 				menu
 			)
 		);
+
+		return MenuWrapperComponent ? _react2['default'].createElement(
+			MenuWrapperComponent,
+			null,
+			menuContainer
+		) : menuContainer;
 	},
 
 	render: function render() {

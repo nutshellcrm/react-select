@@ -1254,7 +1254,7 @@ var Select = _react2['default'].createClass({
 	renderMenu: function renderMenu(options, valueArray, focusedOption) {
 		var _this6 = this;
 
-		if (options && options.length) {
+		if (options && options.length || this.props.allowCreate) {
 			if (this.props.menuRenderer) {
 				return this.props.menuRenderer({
 					focusedOption: focusedOption,
@@ -1268,6 +1268,20 @@ var Select = _react2['default'].createClass({
 				var _ret = (function () {
 					var Option = _this6.props.optionComponent;
 					var renderLabel = _this6.props.optionRenderer || _this6.getOptionLabel;
+
+					if (_this6.props.allowCreate && _this6.state.inputValue.trim()) {
+						var inputValue = _this6.state.inputValue;
+
+						options = options.slice();
+
+						var newOption = _this6.props.newOptionCreator ? _this6.props.newOptionCreator(inputValue) : {
+							value: inputValue,
+							label: inputValue,
+							create: true
+						};
+
+						options.unshift(newOption);
+					}
 
 					return {
 						v: options.map(function (option, i) {
