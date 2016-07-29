@@ -45,6 +45,7 @@ const Select = React.createClass({
 
 	propTypes: {
 		addLabelText: React.PropTypes.string,       // placeholder displayed when you want to add a label on a multi-value input
+		allowCreate: React.PropTypes.bool,
 		'aria-label': React.PropTypes.string,       // Aria label (for assistive tech)
 		'aria-labelledby': React.PropTypes.string,	// HTML ID of an element that should be used as the label (for assistive tech)
 		arrowRenderer: React.PropTypes.func,				// Create drop-down caret element
@@ -79,6 +80,7 @@ const Select = React.createClass({
 		menuWrapperComponent: React.PropTypes.func, // optional wrapper component that will render the menu as a child
 		multi: React.PropTypes.bool,                // multi-value input
 		name: React.PropTypes.string,               // generates a hidden <input /> tag with this field name for html forms
+		newOptionCreator: React.PropTypes.func,
 		noResultsText: stringOrNode,                // placeholder displayed when there are no matching search results
 		onBlur: React.PropTypes.func,               // onBlur handler: function (event) {}
 		onBlurResetsInput: React.PropTypes.bool,    // whether input is cleared on blur
@@ -933,23 +935,74 @@ const Select = React.createClass({
 	},
 
 	renderMenu (options, valueArray, focusedOption) {
-		if (options && options.length) {
-			return this.props.menuRenderer({
-				focusedOption,
-				focusOption: this.focusOption,
-				instancePrefix: this._instancePrefix,
-				labelKey: this.props.labelKey,
-				onFocus: this.focusOption,
-				onSelect: this.selectValue,
-				optionClassName: this.props.optionClassName,
-				optionComponent: this.props.optionComponent,
-				optionRenderer: this.props.optionRenderer || this.getOptionLabel,
-				options,
-				selectValue: this.selectValue,
-				valueArray,
-				valueKey: this.props.valueKey,
-				onOptionRef: this.onOptionRef,
-			});
+		if ((options && options.length) || this.props.allowCreate) {
+			if (this.props.menuRenderer) {
+				return this.props.menuRenderer({
+					focusedOption,
+					focusOption: this.focusOption,
+					instancePrefix: this._instancePrefix,
+					labelKey: this.props.labelKey,
+					onFocus: this.focusOption,
+					onSelect: this.selectValue,
+					optionClassName: this.props.optionClassName,
+					optionComponent: this.props.optionComponent,
+					optionRenderer: this.props.optionRenderer || this.getOptionLabel,
+					options,
+					selectValue: this.selectValue,
+					valueArray,
+					valueKey: this.props.valueKey,
+					onOptionRef: this.onOptionRef,
+				});
+			} else {
+				let Option = this.props.optionComponent;
+				let renderLabel = this.props.optionRenderer || this.getOptionLabel;
+
+				if (this.props.allowCreate && this.state.inputValue.trim()) {
+					let { inputValue } = this.state;
+
+					options = options.slice();
+
+					let newOption = this.props.newOptionCreator
+						? this.props.newOptionCreator(inputValue)
+						: {
+							value: inputValue,
+							label: inputValue,
+							create: true
+						};
+
+					options.unshift(newOption);
+				}
+
+				return options.map((option, i) => {
+					let isSelected = valueArray && valueArray.indexOf(option) > -1;
+					let isFocused = option === focusedOption;
+					let optionRef = isFocused ? 'focused' : null;
+					let optionClass = classNames(this.props.optionClassName, {
+						'Select-option': true,
+						'is-selected': isSelected,
+						'is-focused': isFocused,
+						'is-disabled': option.disabled,
+					});
+
+					return (
+						<Option
+							instancePrefix={this._instancePrefix}
+							optionIndex={i}
+							className={optionClass}
+							isDisabled={option.disabled}
+							isFocused={isFocused}
+							key={`option-${i}-${option[this.props.valueKey]}`}
+							onSelect={this.selectValue}
+							onFocus={this.focusOption}
+							option={option}
+							isSelected={isSelected}
+							ref={optionRef}
+							>
+							{renderLabel(option)}
+						</Option>
+					);
+				});
+			}
 		} else if (this.props.noResultsText) {
 			return (
 				<div className="Select-noresults">
