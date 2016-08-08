@@ -118,8 +118,8 @@ const Async = React.createClass({
 				input = '' + nextState;
 			}
 		}
-		if (this.props.ignoreAccents) input = stripDiacritics(input);
-		if (this.props.ignoreCase) input = input.toLowerCase();
+		// if (this.props.ignoreAccents) input = stripDiacritics(input);
+		// if (this.props.ignoreCase) input = input.toLowerCase();
 
 		this._lastInput = input;
 		if (input.length < this.props.minimumInput) {
